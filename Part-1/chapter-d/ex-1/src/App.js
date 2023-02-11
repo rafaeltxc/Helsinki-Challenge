@@ -18,9 +18,11 @@ const StatisticsLine = ({text, value}) => {
 const Statistics = ({total, children}) => {
   if(total !== 0) {
     return(
-      <div>
-        {children}
-      </div>
+      <table>
+        <tbody>
+          {children}
+        </tbody>
+      </table>
     )
   } 
   
