@@ -1,0 +1,41 @@
+label {
+    font-weight: bolder;
+    font-size: 30px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+input {
+    height: 25px;
+    font-size: 15px;
+    box-shadow: black 0 2px 5px;
+    margin-bottom: 15px;
+}
+
+input:focus {
+    outline: none;
+}
+
+.countries {
+    margin-bottom: 15px;
+}
+
+.countries > p {
+    display: inline;
+    margin-right: 15px;
+}
+
+.countryName {
+    font-weight: bolder;
+    font-size: 25px;
+}
+
+.titleLanguages {
+    font-weight: bolder;
+    font-size: 20px;
+}
+
+.countryFlag {
+    width: 200px;
+    height: 150px;
+}

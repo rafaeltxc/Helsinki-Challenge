@@ -2,6 +2,7 @@ import Persons from './components/Persons';
 import Filter from './components/Filter';
 import PersonForms from './components/PersonForm';
 import Services from './services/numbers';
+import Notification from './components/Notification';
 
 import { useState, useEffect } from 'react'
 
@@ -10,6 +11,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('');
   const [filter, setFilter] = useState('');
+  const [event, setEvent] = useState(null);
+  const [err, setErr] = useState(null);
 
   const personsList = filter.length > 0 ? persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase())) : persons;
   const url = 'http://localhost:3030/persons/';
@@ -24,6 +27,26 @@ const App = () => {
 
   const onChangeFilter = event => {
     setFilter(event.target.value);
+  }
+
+  const eventHandler = message => {
+    setEvent(
+      message
+    )
+
+    setTimeout(() => {
+      setEvent(null);
+    }, 5000)
+  }
+
+  const errHandler = message => {
+    setErr(
+      message
+    )
+
+    setTimeout(() => {
+      setErr(null);
+    }, 5000)
   }
 
   const submitHandler = event => {
@@ -41,8 +64,9 @@ const App = () => {
         if(window.confirm(`${response.name} is already added to phonebook, replace number with a new one?`)) {
           Services.update(url, personId.id, body).then(response => {
             const newList = persons.map(person => person.id !== personId.id ? person : response);
-            console.log(newList);
             setPersons(newList);
+            
+            eventHandler(`Changed ${response.name} number to ${body.number}`)
           })}
       })
       return 
@@ -52,6 +76,8 @@ const App = () => {
       setPersons(persons.concat(response));
       setNewName('');
       setNewNumber('');
+
+      eventHandler(`Added ${response.name} to the phonebook`)
     }).catch(err => {
       console.log(err.message);
     })
@@ -66,18 +92,24 @@ const App = () => {
   }, [])
 
   const deleteHandler = id => {
+    const newList = persons.filter(person => person.id !== id);
+
     Services.getById(url, id).then(response => {
       if(window.confirm(`Are you sure you want to delete ${response.name}?`))
       Services.deletePersons(url, id).then(() => {
-        const newList = persons.filter(person => person.id !== id);
         setPersons(newList);
       })
+    }).catch(() => {
+      const person = persons.find(person => person.id === id);
+      errHandler(`${person.name} number has already been deleted`);
+      setPersons(newList);
     })
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={event} err={err} />
       <Filter filter={filter} onChange={onChangeFilter}/>
       <div>
         <h2>Add a new</h2>
