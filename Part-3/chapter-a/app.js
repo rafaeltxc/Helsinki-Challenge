@@ -1,14 +1,21 @@
 const express = require('express');
 const fs = require('fs');
+const morgan = require('morgan');
 
 const app = express();
 
 app.use(express.json());
+morgan.token('type', (req, res) => {
+    if(req.method === 'POST') {
+    return JSON.stringify(req.body)
+    }
+})
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :type'));
 
 let data;
 fs.readFile(`${__dirname}/data.json`, 'utf8', (err, response) => {
     err ? data = JSON.stringify(response, null, 2) : data = response;
-} )
+})
 
 const toJson = (text) => {
     return JSON.stringify(text, null, 2);

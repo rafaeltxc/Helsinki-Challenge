@@ -11,7 +11,7 @@ GET http://localhost:3030/api/persons/4
 
 ###
 //deleteById
-DELETE http://localhost:3030/api/persons/4
+DELETE http://localhost:3030/api/persons/84
 
 ###
 //post
