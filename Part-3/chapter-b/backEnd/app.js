@@ -9,6 +9,7 @@ app.use(express.static('build'))
 
 app.use(cors());
 app.use(express.json());
+
 morgan.token('type', (req, res) => {
     if(req.method === 'POST') {
     return JSON.stringify(req.body)
@@ -16,32 +17,46 @@ morgan.token('type', (req, res) => {
 })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :type'));
 
-let data;
-fs.readFile(`${__dirname}/data.json`, 'utf8', (err, response) => {
-    err ? data = JSON.stringify(response, null, 2) : data = response;
-})
-
-const toJson = (text) => {
-    return JSON.stringify(text, null, 2);
-}
+let data = [
+    {
+      "id": 1,
+      "name": "Arto Hellas",
+      "number": "040-123456"
+    },
+    {
+      "id": 2,
+      "name": "Ada Lovelace",
+      "number": "39-44-5323523"
+    },
+    {
+      "id": 3,
+      "name": "Dan Abramov",
+      "number": "12-43-234345"
+    },
+    {
+      "id": 4,
+      "name": "Mary Poppendieck",
+      "number": "39-23-6423122"
+    }
+  ];
 
 app.get('/api/persons', (req, res) => {
     res.set('Content-Type', 'application/json');
-    res.end(data);
+    res.json(data);
 })
 
 app.get('/api/persons/info', (req, res) => {
     res.set('Content-Type', 'text/html');
     res.end(
-        `<p>Phonebook has info for ${JSON.parse(data).length} people</p><p>${new Date()}</p>`
+        `<p>Phonebook has info for ${data.length} people</p><p>${new Date()}</p>`
     );
 })
 
 app.get('/api/persons/:id', (req, res) => {
     res.set('Content-Type', 'application/json');
     const personId = req.params.id;
-    const person = toJson(JSON.parse(data).filter(person => person.id === Number(personId))[0]);
-    res.end(person || toJson({Error: 'Person not found'}));
+    const person = data.filter(person => person.id === Number(personId))[0];
+    res.end(JSON.stringify(person) || JSON.stringify({Error: 'Person not found'}));
 })
 
 app.post('/api/persons', (req, res) => {
@@ -52,14 +67,14 @@ app.post('/api/persons', (req, res) => {
         return res.status(400).json({Error: 'Name missing'});
     } else if(!person.number) {
         return res.status(400).json({Error: 'Number missing'});
-    }else if(JSON.parse(data).find(data => data.name === person.name)) {
+    }else if(data.find(data => data.name === person.name)) {
         return res.status(400).json({Error: 'Person already exists'});
     }
 
     let randomId;
     do {
         randomId = Math.round(Math.random() * 100)
-    } while(JSON.parse(data).find(person => person.id === randomId));
+    } while(data.find(person => person.id === randomId));
 
     const newPerson = {
         id: randomId,
@@ -67,35 +82,28 @@ app.post('/api/persons', (req, res) => {
         number: person.number
     }
 
-    const newList = toJson(JSON.parse(data).concat(newPerson));
-    fs.writeFile(`${__dirname}/data.json`, newList, (err) => {
-        if(err) {
-            res.status(500).json({Problem: 'Could not add', Error: err.message})
-        }
-        res.json(newPerson);
-    })
+    const newList = data.concat(newPerson);
+    data = newList;
+    res.json(newPerson);
+
 })
 
 app.delete('/api/persons/:id', (req, res) => {
     res.set('Content-Type', 'application/json');
 
     const personId = Number(req.params.id);
-    const person = toJson(JSON.parse(data).filter(person => person.id === personId)[0]);
-    const newList = toJson(JSON.parse(data).filter(person => person.id !== personId));
+    const person = data.find(person => person.id === personId);
+    const newList = data.filter(person => person.id !== personId);
 
     if(person) {
-        fs.writeFile(`${__dirname}/data.json`, newList, (err) => {
-            if(err) {
-                res.status(500).json({Problem: 'Could not delete', Error: err.message})
-            }
-            res.status(204).end();
-        })
+        data = newList;
+        res.status(204).end();
     } else {
         res.status(404).json({Error: 'Person not found'});
     }
 })
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3030;
 app.listen(PORT, (err) => {
     err ? console.error(err) : console.log('listening on port:', PORT);
 })
