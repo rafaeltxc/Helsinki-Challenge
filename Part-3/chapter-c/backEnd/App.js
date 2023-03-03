@@ -2,12 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const morgan = require('morgan');
 const cors = require('cors');
-const { contact, closeCon } = require('./mongoConnection');
+const { Contact } = require('./mongoConnection');
 
 const app = express();
 
 app.use(express.static('build'))
-
 app.use(cors());
 app.use(express.json());
 
@@ -21,7 +20,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :t
 app.get('/api/persons', (req, res) => {
     res.set('Content-Type', 'application/json');
 
-    contact.find({}).then(contacts => {
+    Contact.find({}).then(contacts => {
         res.status(201).json(contacts);
     }).catch(err => {
         res.status(500).json({ Error: err.message });
@@ -31,60 +30,63 @@ app.get('/api/persons', (req, res) => {
 
 app.get('/api/persons/info', (req, res) => {
     res.set('Content-Type', 'text/html');
-    res.end(
-        `<p>Phonebook has info for ${data.length} people</p><p>${new Date()}</p>`
-    );
+
+    return Contact.find({}).then(contacts => {
+        return res.status(200).end(
+            `<p>Phonebook has info for ${ contacts.length } people</p><p>${ new Date() }</p>`
+        )
+    }).catch(err => {
+        res.status(500).json({ Error: err.message });
+    })
+    
 })
 
 app.get('/api/persons/:id', (req, res) => {
     res.set('Content-Type', 'application/json');
     const personId = req.params.id;
-    const person = data.filter(person => person.id === Number(personId))[0];
-    res.end(JSON.stringify(person) || JSON.stringify({Error: 'Person not found'}));
+
+    return Contact.findById(personId).then(contact => {
+        if(contact != null) {
+            return res.status(201).json(contact);
+        } else {
+            return res.status(404).json({Error: 'Person not found'});
+        }
+        
+    }).catch(err => res.status(500).json({ Error: err.message }))
 })
 
 app.post('/api/persons', (req, res) => {
     res.set('Content-Type', 'application/json');
     const person = req.body;
-
+    
     if(!person.name) {
         return res.status(400).json({Error: 'Name missing'});
     } else if(!person.number) {
         return res.status(400).json({Error: 'Number missing'});
-    }else if(data.find(data => data.name === person.name)) {
-        return res.status(400).json({Error: 'Person already exists'});
+    } else {
+        const contact = new Contact({
+            name: person.name,
+            number: person.number
+        })
+    
+        return contact.save().then(contact => {
+            return res.status(200).json(contact);
+        }).catch(err => res.status(500).json({ Error: err.message }))
     }
-
-    let randomId;
-    do {
-        randomId = Math.round(Math.random() * 100)
-    } while(data.find(person => person.id === randomId));
-
-    const newPerson = {
-        id: randomId,
-        name: person.name,
-        number: person.number
-    }
-
-    const newList = data.concat(newPerson);
-    data = newList;
-    res.json(newPerson);
-
 })
 
 app.delete('/api/persons/:id', (req, res) => {
     res.set('Content-Type', 'application/json');
 
-    const personId = Number(req.params.id);
-    const person = data.find(person => person.id === personId);
-    const newList = data.filter(person => person.id !== personId);
-
-    if(person) {
-        data = newList;
-        res.status(204).end();
-    } else {
-        res.status(404).json({Error: 'Person not found'});
-    }
+    const personId = req.params.id;
+    return Contact.findById(personId).then(result => {
+        if(result != null) {
+            return Contact.deleteOne({ _id: personId }).then(() => res.status(204).end())
+                .catch(err => res.status(500).json({ Error: err.message }))
+        } else {
+            return res.status(404).json({Error: 'Person not found'});
+        }
+    }).catch(err => res.status(500).json({ Error: err.message }))
 })
 
 const PORT = process.env.PORT || 3030;

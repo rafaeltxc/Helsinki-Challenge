@@ -10,7 +10,7 @@ function getAll(url) {
 }
 
 function getById(url, id) {
-    return axios.get(url + id)
+    return axios.get(`${url}/${id}`)
     .then(response => {
         return response.data
     }).catch(err => {
@@ -28,11 +28,11 @@ function post(url, data) {
 }
 
 function deletePersons(url, id) {
-    return axios.delete(url + id)
+    return axios.delete(`${url}/${id}`);
 }
 
 function update(url, id, data) {
-    return axios.put(url + id, data)
+    return axios.put(`${url}/${id}`, data)
     .then(response => {
         return response.data;
     }).catch(err => {

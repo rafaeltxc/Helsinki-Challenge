@@ -5,17 +5,24 @@ const uri = process.env.MONGODB_URI;
 mongoose.connect(uri).then(() => {
     console.log('Connected to mongodb');
 }).catch(err => {
-    console.log('could not connect to mongodb', err);
+    console.log('could not connect to mongodb', err.message);
 })
 
-const contactSchema = mongoose.Schema({
+const contactSchema = new mongoose.Schema({
     name: String,
     number: String
 })
 
+contactSchema.set('toJSON', {
+    transform: (document, returnedObject) => {
+        returnedObject.id = returnedObject._id.toString()
+        delete returnedObject._id
+        delete returnedObject.__v
+    }
+})
+
 module.exports = {
-    closeCon: mongoose.connection.close,
-    contact: mongoose.model('Contact', contactSchema)
+    Contact: mongoose.model('Contact', contactSchema)
 }
 
 

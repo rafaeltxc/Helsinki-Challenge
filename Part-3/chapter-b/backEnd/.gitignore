@@ -68,6 +68,9 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
+Dockerfile
+.Dockerignore
+fly.toml
 .env
 .env.test
 
