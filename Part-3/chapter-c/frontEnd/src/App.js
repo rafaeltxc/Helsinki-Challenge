@@ -58,17 +58,15 @@ const App = () => {
     }
 
     if(persons.some(person => person.name.toLowerCase() === newName.toLowerCase())) {
-      const personId = persons.find(person => person.name.toLowerCase() === newName.toLowerCase());
-
-      Services.getById(url, personId.id).then(response => {
-        if(window.confirm(`${response.name} is already added to phonebook, replace number with a new one?`)) {
-          Services.update(url, personId.id, body).then(response => {
-            const newList = persons.map(person => person.id !== personId.id ? person : response);
+      const person = persons.find(person => person.name.toLowerCase() === newName.toLowerCase());
+      if(window.confirm(`${person.name} is already added to phonebook, replace number with a new one?`)) {
+          Services.update(url, person.id, body).then(response => {
+            const newList = persons.map(contact => contact.id !== person.id ? contact : response)
             setPersons(newList);
-            
+            setNewName('');
+            setNewNumber('');
             eventHandler(`Changed ${response.name} number to ${body.number}`)
           })}
-      })
       return 
     }
     
