@@ -1,0 +1,24 @@
+//getAll
+GET http://localhost:3030/
+
+###
+//getInfo
+GET http://localhost:3030/info
+
+###
+//getById
+GET http://localhost:3030/api/persons/4
+
+###
+//deleteById
+DELETE http://localhost:3030/api/persons/84
+
+###
+//post
+POST http://localhost:3030/api/persons
+Content-Type: application/json
+
+{
+    "name": "test",
+    "number": 123123
+}
