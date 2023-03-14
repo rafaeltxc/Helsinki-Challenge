@@ -1,5 +1,5 @@
+/*global process */
 const express = require("express");
-const fs = require("fs");
 const morgan = require("morgan");
 const cors = require("cors");
 const { Contact } = require("./mongoConnection");
